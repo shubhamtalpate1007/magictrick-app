@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Number Trick Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    .card {
+      background: rgba(0,0,0,0.4);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.5);
+      max-width: 500px;
+      margin: auto;
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      background: #ff9800;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #e68900;
+    }
+    #countdown {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    #result {
+      font-size: 22px;
+      margin-top: 20px;
+    }
+    #instructions {
+      text-align: left;
+      margin: 20px 0;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="title">Number Trick Game 🎩</h2>
+
+    <label for="lang">🌐 Select Language:</label>
+    <select id="lang" onchange="changeLang()">
+      <option value="en">English</option>
+      <option value="mr">मराठी</option>
+      <option value="hi">हिंदी</option>
+    </select>
+
+    <div id="instructions"></div>
+
+    <input type="number" id="finalNumber" placeholder="Enter your final number" />
+    <br/>
+    <button onclick="startTrick()">Reveal Magic ✨</button>
+
+    <div id="countdown"></div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    // Text for different languages
+    let texts = {
+      en: {
+        title: "Number Trick Game 🎩",
+        instructions: `
+          1. Think of a number between 1–9.<br>
+          2. Multiply it by 2.<br>
+          3. Add 6.<br>
+          4. Divide the whole answer by 2.<br>
+          👉 Now enter the number you got:
+        `,
+        suspense: "Your hidden number is...",
+        reveal: "Your original number is: "
+      },
+      mr: {
+        title: "नंबर ट्रिक गेम 🎩",
+        instructions: `
+          1. मनात 1–9 मधला नंबर घ्या.<br>
+          2. त्याला <b>2 ने गुणा</b> करा.<br>
+          3. त्यात <b>6 जोडा</b>.<br>
+          4. आता पूर्ण उत्तराला <b>2 ने भागा</b>.<br>
+          👉 आता आलेला नंबर इथे टाका:
+        `,
+        suspense: "तुमचं मनातलं नंबर आहे...",
+        reveal: "तुझा मूळ नंबर आहे: "
+      },
+      hi: {
+        title: "नंबर ट्रिक गेम 🎩",
+        instructions: `
+          1. 1–9 में से कोई नंबर सोचो।<br>
+          2. उसे <b>2 से गुणा करो</b>।<br>
+          3. उसमें <b>6 जोड़ो</b>।<br>
+          4. अब पूरे उत्तर को <b>2 से भाग दो</b>।<br>
+          👉 अब जो नंबर आया है वो यहाँ डालो:
+        `,
+        suspense: "आपका असली नंबर है...",
+        reveal: "आपका मूल नंबर है: "
+      }
+    };
+
+    // Default language setup
+    function changeLang() {
+      let lang = document.getElementById("lang").value;
+      document.getElementById("title").innerText = texts[lang].title;
+      document.getElementById("instructions").innerHTML = texts[lang].instructions;
+    }
+    changeLang();
+
+    // Trick start
+    function startTrick() {
+      let num = document.getElementById("finalNumber").value;
+      let lang = document.getElementById("lang").value;
+
+      if(!num) {
+        alert("Please enter a number!");
+        return;
+      }
+
+      document.getElementById("result").innerText = "";
+      let countdown = document.getElementById("countdown");
+
+      // Suspense message first
+      countdown.innerText = texts[lang].suspense;
+
+      let count = 3;
+      setTimeout(() => {
+        countdown.innerText = count;
+
+        let timer = setInterval(() => {
+          count--;
+          if(count > 0) {
+            countdown.innerText = count;
+          } else {
+            clearInterval(timer);
+            countdown.innerText = "";
+
+            // Call backend
+			// Backend call (CORRECT)
+			fetch(`/api/trick/guess/${num}`)
+			  .then(res => res.text())
+			  .then(data => {
+			    document.getElementById("result").innerText = texts[lang].reveal + data;
+			  })
+			  .catch(err => {
+			    document.getElementById("result").innerText = "Error contacting server!";
+			  });
+
+          }
+        }, 1000);
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
